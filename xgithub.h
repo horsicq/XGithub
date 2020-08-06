@@ -31,6 +31,13 @@ class XGithub : public QObject
     Q_OBJECT
 
 public:
+    struct RELEASE_HEADER
+    {
+        bool bValid;
+        QString sName;
+        QDateTime dt;
+    };
+
     explicit XGithub(QString sUserName,QString sRepoName,QObject *pParent=nullptr);
     ~XGithub();
     void getLatestRelease();
