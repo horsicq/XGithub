@@ -31,22 +31,36 @@ XGithub::XGithub(QString sUserName, QString sRepoName, QObject *pParent) : QObje
 XGithub::~XGithub()
 {
     bIsStop=true;
+
+    QSetIterator<QNetworkReply *> i(stReplies);
+    while(i.hasNext())
+    {
+        QNetworkReply *pReply=i.next();
+
+        pReply->abort();
+    }
+
+    // TODO wait
 }
 
-void XGithub::getLatestRelease()
+XGithub::RELEASE_HEADER XGithub::getLatestRelease()
 {
-    QNetworkAccessManager nam;
+    RELEASE_HEADER result={};
+
     QNetworkRequest req(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest").arg(sUserName).arg(sRepoName)));
-    QNetworkReply *reply=nam.get(req);
+    QNetworkReply *pReply=nam.get(req);
+
+    stReplies.insert(pReply);
+
     QEventLoop loop;
-    QObject::connect(reply,SIGNAL(finished()),&loop,SLOT(quit()));
+    QObject::connect(pReply,SIGNAL(finished()),&loop,SLOT(quit()));
     loop.exec();
 
     if(!bIsStop)
     {
-        if(!reply->error())
+        if(!pReply->error())
         {
-            QByteArray baData=reply->readAll();
+            QByteArray baData=pReply->readAll();
             QJsonDocument document=QJsonDocument::fromJson(baData);
 
             QString strJson(document.toJson(QJsonDocument::Indented));
@@ -55,10 +69,13 @@ void XGithub::getLatestRelease()
         }
         else
         {
-            QString sErrorString=reply->errorString();
+            QString sErrorString=pReply->errorString();
 
-            int z=0;
-            z++;
+            emit errorMessage(sErrorString);
         }
     }
+
+    stReplies.remove(pReply);
+
+    return result;
 }

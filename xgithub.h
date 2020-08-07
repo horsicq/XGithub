@@ -49,12 +49,17 @@ public:
 
     explicit XGithub(QString sUserName,QString sRepoName,QObject *pParent=nullptr);
     ~XGithub();
-    void getLatestRelease();
+    RELEASE_HEADER getLatestRelease();
+
+signals:
+    void errorMessage(QString sText);
 
 private:
     QString sUserName;
     QString sRepoName;
     bool bIsStop;
+    QSet<QNetworkReply *> stReplies;
+    QNetworkAccessManager nam;
 };
 
 #endif // XGITHUB_H
