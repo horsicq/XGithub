@@ -68,10 +68,10 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease()
             qDebug(strJson.toLatin1().data());
 
             result.bValid=true;
-            result.sName=document.object()["value"].toString();
-            result.dt=QDateTime::fromString(document.object()["value"].toString(),"yyyy-MM-ddThh:mm:ssZ");
+            result.sName=document.object()["name"].toString();
+            result.dt=QDateTime::fromString(document.object()["published_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
 
-            QJsonArray jsonArray=QDateTime::fromString(document.object()["assets"].toArray());
+            QJsonArray jsonArray=document.object()["assets"].toArray();
 
             int nCount=jsonArray.count();
 
