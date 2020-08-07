@@ -66,6 +66,26 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease()
             QString strJson(document.toJson(QJsonDocument::Indented));
 
             qDebug(strJson.toLatin1().data());
+
+            result.bValid=true;
+            result.sName=document.object()["value"].toString();
+            result.dt=QDateTime::fromString(document.object()["value"].toString(),"yyyy-MM-ddThh:mm:ssZ");
+
+            QJsonArray jsonArray=QDateTime::fromString(document.object()["assets"].toArray());
+
+            int nCount=jsonArray.count();
+
+            for(int i=0;i<nCount;i++)
+            {
+                RELEASE_RECORD record={};
+
+                record.sSrc=jsonArray.at(i)["browser_download_url"].toString();
+                record.nSize=jsonArray.at(i)["size"].toInt();
+                record.sName=jsonArray.at(i)["name"].toString();
+                result.dt=QDateTime::fromString(jsonArray.at(i)["updated_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
+
+                result.listRecords.append(record);
+            }
         }
         else
         {

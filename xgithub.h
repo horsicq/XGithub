@@ -25,6 +25,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 class XGithub : public QObject
 {
