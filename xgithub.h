@@ -31,11 +31,20 @@ class XGithub : public QObject
     Q_OBJECT
 
 public:
+    struct RELEASE_RECORD
+    {
+        QString sName;
+        QString sSrc;
+        qint64 nSize;
+        QDateTime dt;
+    };
+
     struct RELEASE_HEADER
     {
         bool bValid;
         QString sName;
         QDateTime dt;
+        QList<RELEASE_RECORD> listRecords;
     };
 
     explicit XGithub(QString sUserName,QString sRepoName,QObject *pParent=nullptr);
