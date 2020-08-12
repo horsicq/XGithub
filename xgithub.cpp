@@ -48,7 +48,7 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease()
     RELEASE_HEADER result={};
 
     QNetworkRequest req(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest").arg(sUserName).arg(sRepoName)));
-    QNetworkReply *pReply=nam.get(req);
+    QNetworkReply *pReply=naManager.get(req);
 
     stReplies.insert(pReply);
 

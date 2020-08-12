@@ -61,7 +61,7 @@ private:
     QString sRepoName;
     bool bIsStop;
     QSet<QNetworkReply *> stReplies;
-    QNetworkAccessManager nam;
+    QNetworkAccessManager naManager;
 };
 
 #endif // XGITHUB_H
