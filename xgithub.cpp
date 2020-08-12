@@ -82,7 +82,7 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease()
                 record.sSrc=jsonArray.at(i)["browser_download_url"].toString();
                 record.nSize=jsonArray.at(i)["size"].toInt();
                 record.sName=jsonArray.at(i)["name"].toString();
-                result.dt=QDateTime::fromString(jsonArray.at(i)["updated_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
+                record.dt=QDateTime::fromString(jsonArray.at(i)["updated_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
 
                 result.listRecords.append(record);
             }
