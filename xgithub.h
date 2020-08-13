@@ -51,6 +51,7 @@ public:
 
     explicit XGithub(QString sUserName,QString sRepoName,QObject *pParent=nullptr);
     ~XGithub();
+
     RELEASE_HEADER getLatestRelease();
 
 signals:
