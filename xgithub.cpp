@@ -96,6 +96,15 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease()
         {
             QString sErrorString=pReply->errorString();
 
+            if(sErrorString.contains("server replied: rate limit exceeded"))
+            {
+                sErrorString+="\n";
+                sErrorString+="Github has the limit is 60 requests per hour for unauthenticated users (and 5000 for authenticated users).";
+                sErrorString+="\n";
+                sErrorString+="\n";
+                sErrorString+="TRY AGAIN IN ONE HOUR!";
+            }
+
             emit errorMessage(sErrorString);
         }
     }
