@@ -66,10 +66,13 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease()
 
             QString strJson(document.toJson(QJsonDocument::Indented));
 
+        #ifdef QT_DEBUG
             qDebug(strJson.toLatin1().data());
+        #endif
 
             result.bValid=true;
             result.sName=document.object()["name"].toString();
+            result.sTag=document.object()["tag_name"].toString();
             result.dt=QDateTime::fromString(document.object()["published_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
 
             QJsonArray jsonArray=document.object()["assets"].toArray();

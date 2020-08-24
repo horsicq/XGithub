@@ -45,6 +45,7 @@ public:
     {
         bool bValid;
         QString sName;
+        QString sTag;
         QDateTime dt;
         QList<RELEASE_RECORD> listRecords;
     };
