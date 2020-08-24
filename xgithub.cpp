@@ -64,9 +64,8 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease()
             QByteArray baData=pReply->readAll();
             QJsonDocument document=QJsonDocument::fromJson(baData);
 
-            QString strJson(document.toJson(QJsonDocument::Indented));
-
         #ifdef QT_DEBUG
+            QString strJson(document.toJson(QJsonDocument::Indented));
             qDebug(strJson.toLatin1().data());
         #endif
 
