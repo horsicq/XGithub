@@ -43,12 +43,22 @@ XGithub::~XGithub()
     // TODO wait
 }
 
-XGithub::RELEASE_HEADER XGithub::getLatestRelease()
+XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
 {
     RELEASE_HEADER result={};
 
     // TODO prerelease
-    QNetworkRequest req(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest").arg(sUserName).arg(sRepoName)));
+    QNetworkRequest req;
+
+    if(!bPrerelease)
+    {
+        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest").arg(sUserName).arg(sRepoName)));
+    }
+    else
+    {
+        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases").arg(sUserName).arg(sRepoName)));
+    }
+
     QNetworkReply *pReply=naManager.get(req);
 
     stReplies.insert(pReply);
@@ -69,27 +79,18 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease()
             qDebug(strJson.toLatin1().data());
         #endif
 
-            result.bValid=true;
-            result.sName=document.object()["name"].toString();
-            result.sTag=document.object()["tag_name"].toString();
-            result.dt=QDateTime::fromString(document.object()["published_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
-
-            QJsonArray jsonArray=document.object()["assets"].toArray();
-
-            int nCount=jsonArray.count();
-
-            for(int i=0;i<nCount;i++)
+            if(!bPrerelease)
             {
-                RELEASE_RECORD record={};
+                result=getRelease(document.object());
+            }
+            else
+            {
+                QJsonArray jsArray=document.array();
 
-                QJsonObject _object=jsonArray.at(i).toObject();
-
-                record.sSrc=_object["browser_download_url"].toString();
-                record.nSize=_object["size"].toInt();
-                record.sName=_object["name"].toString();
-                record.dt=QDateTime::fromString(_object["updated_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
-
-                result.listRecords.append(record);
+                if(jsArray.count())
+                {
+                    result=getRelease(jsArray.at(0).toObject());
+                }
             }
         }
         else
@@ -110,6 +111,36 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease()
     }
 
     stReplies.remove(pReply);
+
+    return result;
+}
+
+XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
+{
+    RELEASE_HEADER result={};
+
+    result.bValid=true;
+    result.sName=jsonObject["name"].toString();
+    result.sTag=jsonObject["tag_name"].toString();
+    result.dt=QDateTime::fromString(jsonObject["published_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
+
+    QJsonArray jsonArray=jsonObject["assets"].toArray();
+
+    int nCount=jsonArray.count();
+
+    for(int i=0;i<nCount;i++)
+    {
+        RELEASE_RECORD record={};
+
+        QJsonObject _object=jsonArray.at(i).toObject();
+
+        record.sSrc=_object["browser_download_url"].toString();
+        record.nSize=_object["size"].toInt();
+        record.sName=_object["name"].toString();
+        record.dt=QDateTime::fromString(_object["updated_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
+
+        result.listRecords.append(record);
+    }
 
     return result;
 }

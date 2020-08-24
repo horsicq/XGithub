@@ -53,7 +53,10 @@ public:
     explicit XGithub(QString sUserName,QString sRepoName,QObject *pParent=nullptr);
     ~XGithub();
 
-    RELEASE_HEADER getLatestRelease();
+    RELEASE_HEADER getLatestRelease(bool bPrerelease);
+
+private:
+    RELEASE_HEADER getRelease(QJsonObject jsonObject);
 
 signals:
     void errorMessage(QString sText);
