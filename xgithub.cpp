@@ -47,7 +47,6 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
 {
     RELEASE_HEADER result={};
 
-    // TODO prerelease
     QNetworkRequest req;
 
     if(!bPrerelease)
@@ -115,6 +114,23 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
     return result;
 }
 
+QList<QString> XGithub::getDownloadLinks(QString sString)
+{
+    QList<QString> listResult;
+
+    int nCount=sString.count("](");
+
+    for(int i=0;i<nCount;i++)
+    {
+        QString sLink=sString.section("](",i+1,i+1);
+        sLink=sLink.section(")",0,0);
+
+        listResult.append(sLink);
+    }
+
+    return listResult;
+}
+
 XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
 {
     RELEASE_HEADER result={};
@@ -122,6 +138,7 @@ XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
     result.bValid=true;
     result.sName=jsonObject["name"].toString();
     result.sTag=jsonObject["tag_name"].toString();
+    result.sBody=jsonObject["body"].toString();
     result.dt=QDateTime::fromString(jsonObject["published_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
 
     QJsonArray jsonArray=jsonObject["assets"].toArray();

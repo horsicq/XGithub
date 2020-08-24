@@ -46,6 +46,7 @@ public:
         bool bValid;
         QString sName;
         QString sTag;
+        QString sBody;
         QDateTime dt;
         QList<RELEASE_RECORD> listRecords;
     };
@@ -54,6 +55,7 @@ public:
     ~XGithub();
 
     RELEASE_HEADER getLatestRelease(bool bPrerelease);
+    static QList<QString> getDownloadLinks(QString sString);
 
 private:
     RELEASE_HEADER getRelease(QJsonObject jsonObject);
