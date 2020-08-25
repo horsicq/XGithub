@@ -124,6 +124,7 @@ QList<QString> XGithub::getDownloadLinks(QString sString)
     {
         QString sLink=sString.section("](",i+1,i+1);
         sLink=sLink.section(")",0,0);
+        sLink=sLink.remove("?raw=true");
 
         listResult.append(sLink);
     }
