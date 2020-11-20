@@ -56,6 +56,7 @@ public:
 
     RELEASE_HEADER getLatestRelease(bool bPrerelease);
     static QList<QString> getDownloadLinks(QString sString);
+    void setCredentials(QString sUser, QString sToken);
 
 private:
     RELEASE_HEADER getRelease(QJsonObject jsonObject);
@@ -66,6 +67,8 @@ signals:
 private:
     QString sUserName;
     QString sRepoName;
+    QString sAuthUser;
+    QString sAuthToken;
     bool bIsStop;
     QSet<QNetworkReply *> stReplies;
     QNetworkAccessManager naManager;

@@ -58,6 +58,14 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
         req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases").arg(sUserName).arg(sRepoName)));
     }
 
+    // Add credentials if supplied
+    if(!sAuthUser.isEmpty())
+    {
+        QString auth = sAuthUser + ":" + sAuthToken;
+        auth = "Basic " + auth.toLocal8Bit().toBase64();
+        req.setRawHeader("Authorization", auth.toLocal8Bit());
+    }
+
     QNetworkReply *pReply=naManager.get(req);
 
     stReplies.insert(pReply);
@@ -160,4 +168,10 @@ XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
     }
 
     return result;
+}
+
+void XGithub::setCredentials(QString sUser, QString sToken)
+{
+    sAuthUser = sUser;
+    sAuthToken = sToken;
 }
