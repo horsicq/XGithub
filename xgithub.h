@@ -22,11 +22,11 @@
 #define XGITHUB_H
 
 #include <QEventLoop>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 class XGithub : public QObject
 {
