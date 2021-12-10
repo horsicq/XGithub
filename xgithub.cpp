@@ -39,7 +39,7 @@ XGithub::~XGithub()
 
         pReply->abort();
     }
-
+    // TODO Check
     // TODO wait
 }
 
@@ -126,9 +126,9 @@ QList<QString> XGithub::getDownloadLinks(QString sString)
 {
     QList<QString> listResult;
 
-    int nCount=sString.count("](");
+    qint32 nCount=sString.count("](");
 
-    for(int i=0;i<nCount;i++)
+    for(qint32 i=0;i<nCount;i++)
     {
         QString sLink=sString.section("](",i+1,i+1);
         sLink=sLink.section(")",0,0);
