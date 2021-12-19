@@ -151,9 +151,9 @@ XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
 
     QJsonArray jsonArray=jsonObject["assets"].toArray();
 
-    int nCount=jsonArray.count();
+    qint32 nCount=jsonArray.count();
 
-    for(int i=0;i<nCount;i++)
+    for(qint32 i=0;i<nCount;i++)
     {
         RELEASE_RECORD record={};
 
