@@ -56,7 +56,7 @@ public:
 
     RELEASE_HEADER getLatestRelease(bool bPrerelease);
     static QList<QString> getDownloadLinks(QString sString);
-    void setCredentials(QString sUser, QString sToken);
+    void setCredentials(QString sUser,QString sToken);
 
 private:
     RELEASE_HEADER getRelease(QJsonObject jsonObject);
