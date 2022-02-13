@@ -51,11 +51,11 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
 
     if(!bPrerelease)
     {
-        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest").arg(sUserName).arg(sRepoName)));
+        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest").arg(sUserName,sRepoName)));
     }
     else
     {
-        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases").arg(sUserName).arg(sRepoName)));
+        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases").arg(sUserName,sRepoName)));
     }
 
     // Add credentials if supplied
