@@ -20,7 +20,7 @@
  */
 #include "xgithub.h"
 
-XGithub::XGithub(QString sUserName, QString sRepoName, QObject *pParent) : QObject(pParent)
+XGithub::XGithub(QString sUserName,QString sRepoName,QObject *pParent) : QObject(pParent)
 {
     this->sUserName=sUserName;
     this->sRepoName=sRepoName;
