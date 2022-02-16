@@ -170,7 +170,7 @@ XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
     return result;
 }
 
-void XGithub::setCredentials(QString sUser, QString sToken)
+void XGithub::setCredentials(QString sUser,QString sToken)
 {
     sAuthUser = sUser;
     sAuthToken = sToken;
