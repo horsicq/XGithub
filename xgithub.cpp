@@ -61,9 +61,9 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
     // Add credentials if supplied
     if(!sAuthUser.isEmpty())
     {
-        QString auth = sAuthUser + ":" + sAuthToken;
-        auth = "Basic " + auth.toLocal8Bit().toBase64();
-        req.setRawHeader("Authorization", auth.toLocal8Bit());
+        QString auth=sAuthUser+":"+sAuthToken;
+        auth="Basic "+auth.toLocal8Bit().toBase64();
+        req.setRawHeader("Authorization",auth.toLocal8Bit());
     }
 
     QNetworkReply *pReply=naManager.get(req);
