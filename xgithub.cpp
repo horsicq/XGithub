@@ -22,17 +22,17 @@
 
 XGithub::XGithub(QString sUserName,QString sRepoName,QObject *pParent) : QObject(pParent)
 {
-    this->sUserName=sUserName;
-    this->sRepoName=sRepoName;
+    this->g_sUserName=sUserName;
+    this->g_sRepoName=sRepoName;
 
-    bIsStop=false;
+    g_bIsStop=false;
 }
 
 XGithub::~XGithub()
 {
-    bIsStop=true;
+    g_bIsStop=true;
 
-    QSetIterator<QNetworkReply *> i(stReplies);
+    QSetIterator<QNetworkReply *> i(g_stReplies);
     while(i.hasNext())
     {
         QNetworkReply *pReply=i.next();
@@ -51,30 +51,30 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
 
     if(!bPrerelease)
     {
-        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest").arg(sUserName,sRepoName)));
+        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest").arg(g_sUserName,g_sRepoName)));
     }
     else
     {
-        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases").arg(sUserName,sRepoName)));
+        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases").arg(g_sUserName,g_sRepoName)));
     }
 
     // Add credentials if supplied
-    if(!sAuthUser.isEmpty())
+    if(!g_sAuthUser.isEmpty())
     {
-        QString auth=sAuthUser+":"+sAuthToken;
+        QString auth=g_sAuthUser+":"+g_sAuthToken;
         auth="Basic "+auth.toLocal8Bit().toBase64();
         req.setRawHeader("Authorization",auth.toLocal8Bit());
     }
 
-    QNetworkReply *pReply=naManager.get(req);
+    QNetworkReply *pReply=g_naManager.get(req);
 
-    stReplies.insert(pReply);
+    g_stReplies.insert(pReply);
 
     QEventLoop loop;
     QObject::connect(pReply,SIGNAL(finished()),&loop,SLOT(quit()));
     loop.exec();
 
-    if(!bIsStop)
+    if(!g_bIsStop)
     {
         if(!pReply->error())
         {
@@ -117,7 +117,7 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
         }
     }
 
-    stReplies.remove(pReply);
+    g_stReplies.remove(pReply);
 
     return result;
 }
@@ -172,6 +172,6 @@ XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
 
 void XGithub::setCredentials(QString sUser,QString sToken)
 {
-    sAuthUser = sUser;
-    sAuthToken = sToken;
+    g_sAuthUser = sUser;
+    g_sAuthToken = sToken;
 }

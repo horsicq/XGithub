@@ -65,13 +65,13 @@ signals:
     void errorMessage(QString sText);
 
 private:
-    QString sUserName;
-    QString sRepoName;
-    QString sAuthUser;
-    QString sAuthToken;
-    bool bIsStop;
-    QSet<QNetworkReply *> stReplies;
-    QNetworkAccessManager naManager;
+    QString g_sUserName;
+    QString g_sRepoName;
+    QString g_sAuthUser;
+    QString g_sAuthToken;
+    bool g_bIsStop;
+    QSet<QNetworkReply *> g_stReplies;
+    QNetworkAccessManager g_naManager;
 };
 
 #endif // XGITHUB_H
