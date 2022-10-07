@@ -172,6 +172,6 @@ XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
 
 void XGithub::setCredentials(QString sUser,QString sToken)
 {
-    g_sAuthUser = sUser;
-    g_sAuthToken = sToken;
+    g_sAuthUser=sUser;
+    g_sAuthToken=sToken;
 }
