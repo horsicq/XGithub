@@ -33,6 +33,7 @@ XGithub::~XGithub()
     g_bIsStop=true;
 
     QSetIterator<QNetworkReply *> i(g_stReplies);
+
     while(i.hasNext())
     {
         QNetworkReply *pReply=i.next();
