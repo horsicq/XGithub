@@ -8,3 +8,6 @@ HEADERS += \
 
 SOURCES += \
     $$PWD/xgithub.cpp
+
+DISTFILES += \
+    $$PWD/README.md
