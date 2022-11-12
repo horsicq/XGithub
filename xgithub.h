@@ -28,21 +28,18 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-class XGithub : public QObject
-{
+class XGithub : public QObject {
     Q_OBJECT
 
 public:
-    struct RELEASE_RECORD
-    {
+    struct RELEASE_RECORD {
         QString sName;
         QString sSrc;
         qint64 nSize;
         QDateTime dt;
     };
 
-    struct RELEASE_HEADER
-    {
+    struct RELEASE_HEADER {
         bool bValid;
         QString sName;
         QString sTag;
@@ -51,12 +48,12 @@ public:
         QList<RELEASE_RECORD> listRecords;
     };
 
-    explicit XGithub(QString sUserName,QString sRepoName,QObject *pParent=nullptr);
+    explicit XGithub(QString sUserName, QString sRepoName, QObject *pParent = nullptr);
     ~XGithub();
 
     RELEASE_HEADER getLatestRelease(bool bPrerelease);
     static QList<QString> getDownloadLinks(QString sString);
-    void setCredentials(QString sUser,QString sToken);
+    void setCredentials(QString sUser, QString sToken);
 
 private:
     RELEASE_HEADER getRelease(QJsonObject jsonObject);
@@ -74,4 +71,4 @@ private:
     QNetworkAccessManager g_naManager;
 };
 
-#endif // XGITHUB_H
+#endif  // XGITHUB_H

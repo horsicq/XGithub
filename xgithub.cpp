@@ -20,23 +20,20 @@
  */
 #include "xgithub.h"
 
-XGithub::XGithub(QString sUserName,QString sRepoName,QObject *pParent) : QObject(pParent)
-{
-    this->g_sUserName=sUserName;
-    this->g_sRepoName=sRepoName;
+XGithub::XGithub(QString sUserName, QString sRepoName, QObject *pParent) : QObject(pParent) {
+    this->g_sUserName = sUserName;
+    this->g_sRepoName = sRepoName;
 
-    g_bIsStop=false;
+    g_bIsStop = false;
 }
 
-XGithub::~XGithub()
-{
-    g_bIsStop=true;
+XGithub::~XGithub() {
+    g_bIsStop = true;
 
     QSetIterator<QNetworkReply *> i(g_stReplies);
 
-    while(i.hasNext())
-    {
-        QNetworkReply *pReply=i.next();
+    while (i.hasNext()) {
+        QNetworkReply *pReply = i.next();
 
         pReply->abort();
     }
@@ -44,74 +41,60 @@ XGithub::~XGithub()
     // TODO wait
 }
 
-XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
-{
-    RELEASE_HEADER result={};
+XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease) {
+    RELEASE_HEADER result = {};
 
     QNetworkRequest req;
 
-    if(!bPrerelease)
-    {
-        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest").arg(g_sUserName,g_sRepoName)));
-    }
-    else
-    {
-        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases").arg(g_sUserName,g_sRepoName)));
+    if (!bPrerelease) {
+        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest").arg(g_sUserName, g_sRepoName)));
+    } else {
+        req.setUrl(QUrl(QString("https://api.github.com/repos/%1/%2/releases").arg(g_sUserName, g_sRepoName)));
     }
 
     // Add credentials if supplied
-    if(!g_sAuthUser.isEmpty())
-    {
-        QString auth=g_sAuthUser+":"+g_sAuthToken;
-        auth="Basic "+auth.toLocal8Bit().toBase64();
-        req.setRawHeader("Authorization",auth.toLocal8Bit());
+    if (!g_sAuthUser.isEmpty()) {
+        QString auth = g_sAuthUser + ":" + g_sAuthToken;
+        auth = "Basic " + auth.toLocal8Bit().toBase64();
+        req.setRawHeader("Authorization", auth.toLocal8Bit());
     }
 
-    QNetworkReply *pReply=g_naManager.get(req);
+    QNetworkReply *pReply = g_naManager.get(req);
 
     g_stReplies.insert(pReply);
 
     QEventLoop loop;
-    QObject::connect(pReply,SIGNAL(finished()),&loop,SLOT(quit()));
+    QObject::connect(pReply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
-    if(!g_bIsStop)
-    {
-        if(!pReply->error())
-        {
-            QByteArray baData=pReply->readAll();
-            QJsonDocument document=QJsonDocument::fromJson(baData);
+    if (!g_bIsStop) {
+        if (!pReply->error()) {
+            QByteArray baData = pReply->readAll();
+            QJsonDocument document = QJsonDocument::fromJson(baData);
 
-        #ifdef QT_DEBUG
+#ifdef QT_DEBUG
             QString strJson(document.toJson(QJsonDocument::Indented));
             qDebug(strJson.toLatin1().data());
-        #endif
+#endif
 
-            if(!bPrerelease)
-            {
-                result=getRelease(document.object());
-            }
-            else
-            {
-                QJsonArray jsArray=document.array();
+            if (!bPrerelease) {
+                result = getRelease(document.object());
+            } else {
+                QJsonArray jsArray = document.array();
 
-                if(jsArray.count())
-                {
-                    result=getRelease(jsArray.at(0).toObject());
+                if (jsArray.count()) {
+                    result = getRelease(jsArray.at(0).toObject());
                 }
             }
-        }
-        else
-        {
-            QString sErrorString=pReply->errorString();
+        } else {
+            QString sErrorString = pReply->errorString();
 
-            if(sErrorString.contains("server replied: rate limit exceeded"))
-            {
-                sErrorString+="\n";
-                sErrorString+="Github has the limit is 60 requests per hour for unauthenticated users (and 5000 for authenticated users).";
-                sErrorString+="\n";
-                sErrorString+="\n";
-                sErrorString+="TRY AGAIN IN ONE HOUR!";
+            if (sErrorString.contains("server replied: rate limit exceeded")) {
+                sErrorString += "\n";
+                sErrorString += "Github has the limit is 60 requests per hour for unauthenticated users (and 5000 for authenticated users).";
+                sErrorString += "\n";
+                sErrorString += "\n";
+                sErrorString += "TRY AGAIN IN ONE HOUR!";
             }
 
             emit errorMessage(sErrorString);
@@ -123,16 +106,14 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
     return result;
 }
 
-QList<QString> XGithub::getDownloadLinks(QString sString)
-{
+QList<QString> XGithub::getDownloadLinks(QString sString) {
     QList<QString> listResult;
 
-    qint32 nCount=sString.count("](");
+    qint32 nCount = sString.count("](");
 
-    for(qint32 i=0;i<nCount;i++)
-    {
-        QString sLink=sString.section("](",i+1,i+1);
-        sLink=sLink.section(")",0,0);
+    for (qint32 i = 0; i < nCount; i++) {
+        QString sLink = sString.section("](", i + 1, i + 1);
+        sLink = sLink.section(")", 0, 0);
 
         listResult.append(sLink);
     }
@@ -140,30 +121,28 @@ QList<QString> XGithub::getDownloadLinks(QString sString)
     return listResult;
 }
 
-XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
-{
-    RELEASE_HEADER result={};
+XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject) {
+    RELEASE_HEADER result = {};
 
-    result.bValid=true;
-    result.sName=jsonObject["name"].toString();
-    result.sTag=jsonObject["tag_name"].toString();
-    result.sBody=jsonObject["body"].toString();
-    result.dt=QDateTime::fromString(jsonObject["published_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
+    result.bValid = true;
+    result.sName = jsonObject["name"].toString();
+    result.sTag = jsonObject["tag_name"].toString();
+    result.sBody = jsonObject["body"].toString();
+    result.dt = QDateTime::fromString(jsonObject["published_at"].toString(), "yyyy-MM-ddThh:mm:ssZ");
 
-    QJsonArray jsonArray=jsonObject["assets"].toArray();
+    QJsonArray jsonArray = jsonObject["assets"].toArray();
 
-    qint32 nCount=jsonArray.count();
+    qint32 nCount = jsonArray.count();
 
-    for(qint32 i=0;i<nCount;i++)
-    {
-        RELEASE_RECORD record={};
+    for (qint32 i = 0; i < nCount; i++) {
+        RELEASE_RECORD record = {};
 
-        QJsonObject _object=jsonArray.at(i).toObject();
+        QJsonObject _object = jsonArray.at(i).toObject();
 
-        record.sSrc=_object["browser_download_url"].toString();
-        record.nSize=_object["size"].toInt();
-        record.sName=_object["name"].toString();
-        record.dt=QDateTime::fromString(_object["updated_at"].toString(),"yyyy-MM-ddThh:mm:ssZ");
+        record.sSrc = _object["browser_download_url"].toString();
+        record.nSize = _object["size"].toInt();
+        record.sName = _object["name"].toString();
+        record.dt = QDateTime::fromString(_object["updated_at"].toString(), "yyyy-MM-ddThh:mm:ssZ");
 
         result.listRecords.append(record);
     }
@@ -171,8 +150,7 @@ XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
     return result;
 }
 
-void XGithub::setCredentials(QString sUser,QString sToken)
-{
-    g_sAuthUser=sUser;
-    g_sAuthToken=sToken;
+void XGithub::setCredentials(QString sUser, QString sToken) {
+    g_sAuthUser = sUser;
+    g_sAuthToken = sToken;
 }
