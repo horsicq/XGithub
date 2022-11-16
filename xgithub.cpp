@@ -20,14 +20,16 @@
  */
 #include "xgithub.h"
 
-XGithub::XGithub(QString sUserName, QString sRepoName, QObject *pParent) : QObject(pParent) {
+XGithub::XGithub(QString sUserName, QString sRepoName, QObject *pParent) : QObject(pParent)
+{
     this->g_sUserName = sUserName;
     this->g_sRepoName = sRepoName;
 
     g_bIsStop = false;
 }
 
-XGithub::~XGithub() {
+XGithub::~XGithub()
+{
     g_bIsStop = true;
 
     QSetIterator<QNetworkReply *> i(g_stReplies);
@@ -41,7 +43,8 @@ XGithub::~XGithub() {
     // TODO wait
 }
 
-XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease) {
+XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
+{
     RELEASE_HEADER result = {};
 
     QNetworkRequest req;
@@ -106,7 +109,8 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease) {
     return result;
 }
 
-QList<QString> XGithub::getDownloadLinks(QString sString) {
+QList<QString> XGithub::getDownloadLinks(QString sString)
+{
     QList<QString> listResult;
 
     qint32 nCount = sString.count("](");
@@ -121,7 +125,8 @@ QList<QString> XGithub::getDownloadLinks(QString sString) {
     return listResult;
 }
 
-XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject) {
+XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject)
+{
     RELEASE_HEADER result = {};
 
     result.bValid = true;
@@ -150,7 +155,8 @@ XGithub::RELEASE_HEADER XGithub::getRelease(QJsonObject jsonObject) {
     return result;
 }
 
-void XGithub::setCredentials(QString sUser, QString sToken) {
+void XGithub::setCredentials(QString sUser, QString sToken)
+{
     g_sAuthUser = sUser;
     g_sAuthToken = sToken;
 }
