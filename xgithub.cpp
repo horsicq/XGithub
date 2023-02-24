@@ -101,6 +101,8 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
             }
 
             emit errorMessage(sErrorString);
+
+            result.bNetworkError = true;
         }
     }
 

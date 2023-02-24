@@ -41,6 +41,7 @@ public:
 
     struct RELEASE_HEADER {
         bool bValid;
+        bool bNetworkError;
         QString sName;
         QString sTag;
         QString sBody;
