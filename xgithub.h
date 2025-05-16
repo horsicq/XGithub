@@ -57,7 +57,8 @@ public:
     void setCredentials(QString sUser, QString sToken);
 
 private:
-    RELEASE_HEADER getRelease(QJsonObject jsonObject);
+    RELEASE_HEADER _handleReleaseJson(QJsonObject jsonObject);
+    RELEASE_HEADER _getRelease(const QString &sUrl);
 
 signals:
     void errorMessage(QString sText);
