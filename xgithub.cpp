@@ -117,9 +117,9 @@ XGithub::RELEASE_HEADER XGithub::_getRelease(const QString &sUrl)
 
     // Add credentials if supplied
     if (!g_sAuthUser.isEmpty()) {
-       QString auth = g_sAuthUser + ":" + g_sAuthToken;
-       auth = "Basic " + auth.toLocal8Bit().toBase64();
-       req.setRawHeader("Authorization", auth.toLocal8Bit());
+        QString auth = g_sAuthUser + ":" + g_sAuthToken;
+        auth = "Basic " + auth.toLocal8Bit().toBase64();
+        req.setRawHeader("Authorization", auth.toLocal8Bit());
     }
 
     QNetworkReply *pReply = g_naManager.get(req);
@@ -131,39 +131,39 @@ XGithub::RELEASE_HEADER XGithub::_getRelease(const QString &sUrl)
     loop.exec();
 
     if (!g_bIsStop) {
-       if (!pReply->error()) {
-           QByteArray baData = pReply->readAll();
-           QJsonDocument document = QJsonDocument::fromJson(baData);
+        if (!pReply->error()) {
+            QByteArray baData = pReply->readAll();
+            QJsonDocument document = QJsonDocument::fromJson(baData);
 
-    #ifdef QT_DEBUG
-           QString strJson(document.toJson(QJsonDocument::Indented));
-           qDebug(strJson.toLatin1().data());
-    #endif
+#ifdef QT_DEBUG
+            QString strJson(document.toJson(QJsonDocument::Indented));
+            qDebug(strJson.toLatin1().data());
+#endif
 
-           if (document.isArray()) {
-               QJsonArray jsArray = document.array();
+            if (document.isArray()) {
+                QJsonArray jsArray = document.array();
 
-               if (jsArray.count()) {
-                   result = _handleReleaseJson(jsArray.at(0).toObject());
-               }
-           } else {
-               result = _handleReleaseJson(document.object());
-           }
-       } else {
-           QString sErrorString = pReply->errorString();
+                if (jsArray.count()) {
+                    result = _handleReleaseJson(jsArray.at(0).toObject());
+                }
+            } else {
+                result = _handleReleaseJson(document.object());
+            }
+        } else {
+            QString sErrorString = pReply->errorString();
 
-           if (sErrorString.contains("server replied: rate limit exceeded")) {
-               sErrorString += "\n";
-               sErrorString += "Github has the limit is 60 requests per hour for unauthenticated users (and 5000 for authenticated users).";
-               sErrorString += "\n";
-               sErrorString += "\n";
-               sErrorString += "TRY AGAIN IN ONE HOUR!";
-           }
+            if (sErrorString.contains("server replied: rate limit exceeded")) {
+                sErrorString += "\n";
+                sErrorString += "Github has the limit is 60 requests per hour for unauthenticated users (and 5000 for authenticated users).";
+                sErrorString += "\n";
+                sErrorString += "\n";
+                sErrorString += "TRY AGAIN IN ONE HOUR!";
+            }
 
-           emit errorMessage(sErrorString);
+            emit errorMessage(sErrorString);
 
-           result.bNetworkError = true;
-       }
+            result.bNetworkError = true;
+        }
     }
 
     g_stReplies.remove(pReply);
