@@ -43,6 +43,13 @@ XGithub::~XGithub()
     // TODO wait
 }
 
+XGithub::RELEASE_HEADER XGithub::getTagRelease(QString sTag)
+{
+    QString sURL = QString("https://api.github.com/repos/%1/%2/releases/tags/%3").arg(g_sUserName, g_sRepoName, sTag);
+
+    return _getRelease(sURL);
+}
+
 XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
 {
     QString sURL;
@@ -161,6 +168,10 @@ XGithub::RELEASE_HEADER XGithub::_getRelease(const QString &sUrl)
             }
 
             emit errorMessage(sErrorString);
+
+#ifdef QT_DEBUG
+            qDebug(sErrorString.toLatin1().data());
+#endif
 
             result.bNetworkError = true;
         }

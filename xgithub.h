@@ -53,6 +53,7 @@ public:
     ~XGithub();
 
     RELEASE_HEADER getLatestRelease(bool bPrerelease);
+    RELEASE_HEADER getTagRelease(QString sTag);
     static QList<QString> getDownloadLinks(QString sString);
     void setCredentials(QString sUser, QString sToken);
 
