@@ -49,7 +49,7 @@ public:
         QList<RELEASE_RECORD> listRecords;
     };
 
-    explicit XGithub(QString sUserName, QString sRepoName, QObject *pParent = nullptr);
+    explicit XGithub(const QString &sUserName, const QString &sRepoName, QObject *pParent = nullptr);
     ~XGithub();
 
     RELEASE_HEADER getLatestRelease(bool bPrerelease);
