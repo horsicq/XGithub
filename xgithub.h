@@ -57,6 +57,16 @@ public:
     static QList<QString> getDownloadLinks(QString sString);
     void setCredentials(QString sUser, QString sToken);
 
+    struct WEBFILE {
+        bool bValid;
+        QString sContent;
+        QString sNetworkError;
+        bool bRedirect;
+        QString sRedirectUrl;
+    };
+
+    static WEBFILE getWebFile(const QString &sUrl);
+
 private:
     RELEASE_HEADER _handleReleaseJson(QJsonObject jsonObject);
     RELEASE_HEADER _getRelease(const QString &sUrl);

@@ -115,6 +115,42 @@ void XGithub::setCredentials(QString sUser, QString sToken)
     g_sAuthToken = sToken;
 }
 
+XGithub::WEBFILE XGithub::getWebFile(const QString &sUrl)
+{
+    WEBFILE result = {};
+
+    QNetworkAccessManager nam;
+    QUrl url(sUrl);
+    QNetworkRequest req(url);
+    QNetworkReply *pReply = nam.get(req);
+    QEventLoop loop;
+    QObject::connect(pReply, SIGNAL(finished()), &loop, SLOT(quit()));
+
+    if (!(pReply->isFinished())) {
+        loop.exec();
+    }
+
+    if (pReply->error() == QNetworkReply::NoError) {
+        if (pReply->bytesAvailable()) {
+            result.sContent = pReply->readAll();
+            result.bValid = true;
+        } else {
+            QString sRedirectUrl = pReply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
+
+            if (sRedirectUrl != "") {
+                result = getWebFile(sRedirectUrl);
+                result.bRedirect = true;
+                result.sRedirectUrl = sRedirectUrl;
+            }
+        }
+    } else {
+        result.bValid = false;
+        result.sNetworkError = pReply->errorString();
+    }
+
+    return result;
+}
+
 XGithub::RELEASE_HEADER XGithub::_getRelease(const QString &sUrl)
 {
     XGithub::RELEASE_HEADER result = {};
