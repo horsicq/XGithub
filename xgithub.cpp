@@ -22,17 +22,17 @@
 
 XGithub::XGithub(const QString &sUserName, const QString &sRepoName, QObject *pParent) : QObject(pParent)
 {
-    this->g_sUserName = sUserName;
-    this->g_sRepoName = sRepoName;
+    this->m_sUserName = sUserName;
+    this->m_sRepoName = sRepoName;
 
-    g_bIsStop = false;
+    m_bIsStop = false;
 }
 
 XGithub::~XGithub()
 {
-    g_bIsStop = true;
+    m_bIsStop = true;
 
-    QSetIterator<QNetworkReply *> i(g_stReplies);
+    QSetIterator<QNetworkReply *> i(m_stReplies);
 
     while (i.hasNext()) {
         QNetworkReply *pReply = i.next();
@@ -45,7 +45,7 @@ XGithub::~XGithub()
 
 XGithub::RELEASE_HEADER XGithub::getTagRelease(QString sTag)
 {
-    QString sURL = QString("https://api.github.com/repos/%1/%2/releases/tags/%3").arg(g_sUserName, g_sRepoName, sTag);
+    QString sURL = QString("https://api.github.com/repos/%1/%2/releases/tags/%3").arg(m_sUserName, m_sRepoName, sTag);
 
     return _getRelease(sURL);
 }
@@ -55,9 +55,9 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
     QString sURL;
 
     if (!bPrerelease) {
-        sURL = QString("https://api.github.com/repos/%1/%2/releases/latest").arg(g_sUserName, g_sRepoName);
+        sURL = QString("https://api.github.com/repos/%1/%2/releases/latest").arg(m_sUserName, m_sRepoName);
     } else {
-        sURL = QString("https://api.github.com/repos/%1/%2/releases").arg(g_sUserName, g_sRepoName);
+        sURL = QString("https://api.github.com/repos/%1/%2/releases").arg(m_sUserName, m_sRepoName);
     }
 
     return _getRelease(sURL);
@@ -111,8 +111,8 @@ XGithub::RELEASE_HEADER XGithub::_handleReleaseJson(QJsonObject jsonObject)
 
 void XGithub::setCredentials(QString sUser, QString sToken)
 {
-    g_sAuthUser = sUser;
-    g_sAuthToken = sToken;
+    m_sAuthUser = sUser;
+    m_sAuthToken = sToken;
 }
 
 XGithub::WEBFILE XGithub::getWebFile(const QString &sUrl)
@@ -159,21 +159,21 @@ XGithub::RELEASE_HEADER XGithub::_getRelease(const QString &sUrl)
     req.setUrl(QUrl(QString(sUrl)));
 
     // Add credentials if supplied
-    if (!g_sAuthUser.isEmpty()) {
-        QString auth = g_sAuthUser + ":" + g_sAuthToken;
+    if (!m_sAuthUser.isEmpty()) {
+        QString auth = m_sAuthUser + ":" + m_sAuthToken;
         auth = "Basic " + auth.toLocal8Bit().toBase64();
         req.setRawHeader("Authorization", auth.toLocal8Bit());
     }
 
-    QNetworkReply *pReply = g_naManager.get(req);
+    QNetworkReply *pReply = m_naManager.get(req);
 
-    g_stReplies.insert(pReply);
+    m_stReplies.insert(pReply);
 
     QEventLoop loop;
     QObject::connect(pReply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
-    if (!g_bIsStop) {
+    if (!m_bIsStop) {
         if (!pReply->error()) {
             QByteArray baData = pReply->readAll();
             QJsonDocument document = QJsonDocument::fromJson(baData);
@@ -213,7 +213,7 @@ XGithub::RELEASE_HEADER XGithub::_getRelease(const QString &sUrl)
         }
     }
 
-    g_stReplies.remove(pReply);
+    m_stReplies.remove(pReply);
 
     return result;
 }
