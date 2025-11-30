@@ -1,3 +1,3 @@
-# XGithub
+# XGitHub
 
-Github API
+GitHub API

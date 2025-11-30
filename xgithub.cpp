@@ -20,7 +20,7 @@
  */
 #include "xgithub.h"
 
-XGithub::XGithub(const QString &sUserName, const QString &sRepoName, QObject *pParent) : QObject(pParent)
+XGitHub::XGitHub(const QString &sUserName, const QString &sRepoName, QObject *pParent) : QObject(pParent)
 {
     this->m_sUserName = sUserName;
     this->m_sRepoName = sRepoName;
@@ -28,7 +28,7 @@ XGithub::XGithub(const QString &sUserName, const QString &sRepoName, QObject *pP
     m_bIsStop = false;
 }
 
-XGithub::~XGithub()
+XGitHub::~XGitHub()
 {
     m_bIsStop = true;
 
@@ -43,14 +43,14 @@ XGithub::~XGithub()
     // TODO wait
 }
 
-XGithub::RELEASE_HEADER XGithub::getTagRelease(QString sTag)
+XGitHub::RELEASE_HEADER XGitHub::getTagRelease(QString sTag)
 {
     QString sURL = QString("https://api.github.com/repos/%1/%2/releases/tags/%3").arg(m_sUserName, m_sRepoName, sTag);
 
     return _getRelease(sURL);
 }
 
-XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
+XGitHub::RELEASE_HEADER XGitHub::getLatestRelease(bool bPrerelease)
 {
     QString sURL;
 
@@ -63,7 +63,7 @@ XGithub::RELEASE_HEADER XGithub::getLatestRelease(bool bPrerelease)
     return _getRelease(sURL);
 }
 
-QList<QString> XGithub::getDownloadLinks(QString sString)
+QList<QString> XGitHub::getDownloadLinks(QString sString)
 {
     QList<QString> listResult;
 
@@ -79,7 +79,7 @@ QList<QString> XGithub::getDownloadLinks(QString sString)
     return listResult;
 }
 
-XGithub::RELEASE_HEADER XGithub::_handleReleaseJson(QJsonObject jsonObject)
+XGitHub::RELEASE_HEADER XGitHub::_handleReleaseJson(QJsonObject jsonObject)
 {
     RELEASE_HEADER result = {};
 
@@ -109,13 +109,13 @@ XGithub::RELEASE_HEADER XGithub::_handleReleaseJson(QJsonObject jsonObject)
     return result;
 }
 
-void XGithub::setCredentials(QString sUser, QString sToken)
+void XGitHub::setCredentials(QString sUser, QString sToken)
 {
     m_sAuthUser = sUser;
     m_sAuthToken = sToken;
 }
 
-XGithub::WEBFILE XGithub::getWebFile(const QString &sUrl)
+XGitHub::WEBFILE XGitHub::getWebFile(const QString &sUrl)
 {
     WEBFILE result = {};
 
@@ -151,9 +151,9 @@ XGithub::WEBFILE XGithub::getWebFile(const QString &sUrl)
     return result;
 }
 
-XGithub::RELEASE_HEADER XGithub::_getRelease(const QString &sUrl)
+XGitHub::RELEASE_HEADER XGitHub::_getRelease(const QString &sUrl)
 {
-    XGithub::RELEASE_HEADER result = {};
+    XGitHub::RELEASE_HEADER result = {};
 
     QNetworkRequest req;
     req.setUrl(QUrl(QString(sUrl)));
@@ -195,11 +195,8 @@ XGithub::RELEASE_HEADER XGithub::_getRelease(const QString &sUrl)
         } else {
             QString sErrorString = pReply->errorString();
 
-            if (sErrorString.contains("server replied: rate limit exceeded")) {
-                sErrorString += "\n";
-                sErrorString += "Github has the limit is 60 requests per hour for unauthenticated users (and 5000 for authenticated users).";
-                sErrorString += "\n";
-                sErrorString += "\n";
+            if (sErrorString.contains("server replied: rate limit exceeded\n")) {
+                sErrorString += "Github has the limit is 60 requests per hour for unauthenticated users (and 5000 for authenticated users).\n\n";
                 sErrorString += "TRY AGAIN IN ONE HOUR!";
             }
 

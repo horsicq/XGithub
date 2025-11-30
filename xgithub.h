@@ -28,7 +28,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-class XGithub : public QObject {
+class XGitHub : public QObject {
     Q_OBJECT
 
 public:
@@ -49,8 +49,8 @@ public:
         QList<RELEASE_RECORD> listRecords;
     };
 
-    explicit XGithub(const QString &sUserName, const QString &sRepoName, QObject *pParent = nullptr);
-    ~XGithub();
+    explicit XGitHub(const QString &sUserName, const QString &sRepoName, QObject *pParent = nullptr);
+    ~XGitHub();
 
     RELEASE_HEADER getLatestRelease(bool bPrerelease);
     RELEASE_HEADER getTagRelease(QString sTag);
