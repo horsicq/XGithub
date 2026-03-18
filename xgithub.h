@@ -22,6 +22,7 @@
 #define XGITHUB_H
 
 #include <QEventLoop>
+#include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -66,6 +67,7 @@ public:
     };
 
     static WEBFILE getWebFile(const QString &sUrl);
+    static bool downloadFile(const QString &sUrl, const QString &sLocalFilePath);
 
 private:
     RELEASE_HEADER _handleReleaseJson(QJsonObject jsonObject);

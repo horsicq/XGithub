@@ -151,6 +151,37 @@ XGitHub::WEBFILE XGitHub::getWebFile(const QString &sUrl)
     return result;
 }
 
+bool XGitHub::downloadFile(const QString &sUrl, const QString &sLocalFilePath)
+{
+    bool bResult = false;
+
+    QNetworkAccessManager nam;
+    QUrl url(sUrl);
+    QNetworkRequest req(url);
+    req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    QNetworkReply *pReply = nam.get(req);
+    QEventLoop loop;
+    QObject::connect(pReply, SIGNAL(finished()), &loop, SLOT(quit()));
+
+    if (!(pReply->isFinished())) {
+        loop.exec();
+    }
+
+    if (pReply->error() == QNetworkReply::NoError) {
+        QFile file(sLocalFilePath);
+
+        if (file.open(QIODevice::WriteOnly)) {
+            file.write(pReply->readAll());
+            file.close();
+            bResult = true;
+        }
+    }
+
+    pReply->deleteLater();
+
+    return bResult;
+}
+
 XGitHub::RELEASE_HEADER XGitHub::_getRelease(const QString &sUrl)
 {
     XGitHub::RELEASE_HEADER result = {};
