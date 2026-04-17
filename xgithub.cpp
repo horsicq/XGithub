@@ -20,6 +20,69 @@
  */
 #include "xgithub.h"
 
+#include <QProcess>
+#include <QStandardPaths>
+#include <QTimer>
+
+namespace {
+QString findCurlProgram()
+{
+    QString sProgram = QStandardPaths::findExecutable(QStringLiteral("curl.exe"));
+
+    if (sProgram.isEmpty()) {
+        sProgram = QStandardPaths::findExecutable(QStringLiteral("curl"));
+    }
+
+    return sProgram;
+}
+
+bool executeCurl(const QString &sProgram, const QStringList &listArguments, QByteArray *pStdOut, QString *pError)
+{
+    QProcess process;
+    process.start(sProgram, listArguments);
+
+    if (!process.waitForStarted(5000)) {
+        if (pError) {
+            *pError = QStringLiteral("Cannot start curl: %1").arg(process.errorString());
+        }
+
+        return false;
+    }
+
+    if (!process.waitForFinished(35000)) {
+        process.kill();
+        process.waitForFinished();
+
+        if (pError) {
+            *pError = QStringLiteral("curl timeout");
+        }
+
+        return false;
+    }
+
+    QByteArray baStdOut = process.readAllStandardOutput();
+    QByteArray baStdErr = process.readAllStandardError();
+
+    if (pStdOut) {
+        *pStdOut = baStdOut;
+    }
+
+    if ((process.exitStatus() != QProcess::NormalExit) || (process.exitCode() != 0)) {
+        if (pError) {
+            *pError = QString::fromLocal8Bit(baStdErr).trimmed();
+
+            if (pError->isEmpty()) {
+                *pError = QStringLiteral("curl failed with exit code %1").arg(process.exitCode());
+            }
+        }
+
+        return false;
+    }
+
+    return true;
+}
+}  // namespace
+
 XGitHub::XGitHub(const QString &sUserName, const QString &sRepoName, QObject *pParent) : QObject(pParent)
 {
     this->m_sUserName = sUserName;
@@ -118,17 +181,50 @@ void XGitHub::setCredentials(QString sUser, QString sToken)
 XGitHub::WEBFILE XGitHub::getWebFile(const QString &sUrl)
 {
     WEBFILE result = {};
+    QString sCurlProgram = findCurlProgram();
+
+    if (!sCurlProgram.isEmpty()) {
+        QByteArray baData;
+        QString sError;
+        QStringList listArguments;
+
+        listArguments << QStringLiteral("--silent") << QStringLiteral("--show-error") << QStringLiteral("--location") << QStringLiteral("--fail")
+                      << QStringLiteral("--max-time") << QStringLiteral("30") << QStringLiteral("--user-agent") << QStringLiteral("XGitHub/1.0")
+                      << QStringLiteral("--header") << QStringLiteral("Accept: application/vnd.github+json") << sUrl;
+
+        if (executeCurl(sCurlProgram, listArguments, &baData, &sError)) {
+            result.sContent = QString::fromUtf8(baData);
+            result.bValid = true;
+        } else {
+            result.bValid = false;
+            result.sNetworkError = sError;
+        }
+
+        return result;
+    }
 
     QNetworkAccessManager nam;
+    nam.setProxy(QNetworkProxy::NoProxy);
     QUrl url(sUrl);
     QNetworkRequest req(url);
+    req.setRawHeader("User-Agent", "XGitHub/1.0");
+    req.setRawHeader("Accept", "application/vnd.github+json");
+    req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    req.setTransferTimeout(30000);
     QNetworkReply *pReply = nam.get(req);
     QEventLoop loop;
+    QTimer timer;
+    timer.setSingleShot(true);
     QObject::connect(pReply, SIGNAL(finished()), &loop, SLOT(quit()));
+    QObject::connect(&timer, &QTimer::timeout, pReply, &QNetworkReply::abort);
+    QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(30000);
 
     if (!(pReply->isFinished())) {
         loop.exec();
     }
+
+    timer.stop();
 
     if (pReply->error() == QNetworkReply::NoError) {
         if (pReply->bytesAvailable()) {
@@ -148,24 +244,56 @@ XGitHub::WEBFILE XGitHub::getWebFile(const QString &sUrl)
         result.sNetworkError = pReply->errorString();
     }
 
+    pReply->deleteLater();
+
     return result;
 }
 
 bool XGitHub::downloadFile(const QString &sUrl, const QString &sLocalFilePath)
 {
     bool bResult = false;
+    QString sCurlProgram = findCurlProgram();
+
+    if (!sCurlProgram.isEmpty()) {
+        QString sError;
+        QStringList listArguments;
+
+        listArguments << QStringLiteral("--silent") << QStringLiteral("--show-error") << QStringLiteral("--location") << QStringLiteral("--fail")
+                      << QStringLiteral("--max-time") << QStringLiteral("30") << QStringLiteral("--user-agent") << QStringLiteral("XGitHub/1.0")
+                      << QStringLiteral("--header") << QStringLiteral("Accept: application/octet-stream") << QStringLiteral("--output") << sLocalFilePath
+                      << sUrl;
+
+        bResult = executeCurl(sCurlProgram, listArguments, nullptr, &sError);
+
+        if ((!bResult) && QFile::exists(sLocalFilePath)) {
+            QFile::remove(sLocalFilePath);
+        }
+
+        return bResult;
+    }
 
     QNetworkAccessManager nam;
+    nam.setProxy(QNetworkProxy::NoProxy);
     QUrl url(sUrl);
     QNetworkRequest req(url);
+    req.setRawHeader("User-Agent", "XGitHub/1.0");
+    req.setRawHeader("Accept", "application/octet-stream");
     req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    req.setTransferTimeout(30000);
     QNetworkReply *pReply = nam.get(req);
     QEventLoop loop;
+    QTimer timer;
+    timer.setSingleShot(true);
     QObject::connect(pReply, SIGNAL(finished()), &loop, SLOT(quit()));
+    QObject::connect(&timer, &QTimer::timeout, pReply, &QNetworkReply::abort);
+    QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(30000);
 
     if (!(pReply->isFinished())) {
         loop.exec();
     }
+
+    timer.stop();
 
     if (pReply->error() == QNetworkReply::NoError) {
         QFile file(sLocalFilePath);
@@ -185,9 +313,51 @@ bool XGitHub::downloadFile(const QString &sUrl, const QString &sLocalFilePath)
 XGitHub::RELEASE_HEADER XGitHub::_getRelease(const QString &sUrl)
 {
     XGitHub::RELEASE_HEADER result = {};
+    QString sCurlProgram = findCurlProgram();
 
+    if (!sCurlProgram.isEmpty()) {
+        QByteArray baData;
+        QString sError;
+        QStringList listArguments;
+
+        listArguments << QStringLiteral("--silent") << QStringLiteral("--show-error") << QStringLiteral("--location") << QStringLiteral("--fail")
+                      << QStringLiteral("--max-time") << QStringLiteral("30") << QStringLiteral("--user-agent") << QStringLiteral("XGitHub/1.0")
+                      << QStringLiteral("--header") << QStringLiteral("Accept: application/vnd.github+json");
+
+        if (!m_sAuthUser.isEmpty()) {
+            listArguments << QStringLiteral("--user") << QStringLiteral("%1:%2").arg(m_sAuthUser, m_sAuthToken);
+        }
+
+        listArguments << sUrl;
+
+        if (executeCurl(sCurlProgram, listArguments, &baData, &sError)) {
+            QJsonDocument document = QJsonDocument::fromJson(baData);
+
+            if (document.isArray()) {
+                QJsonArray jsArray = document.array();
+
+                if (jsArray.count()) {
+                    result = _handleReleaseJson(jsArray.at(0).toObject());
+                }
+            } else {
+                result = _handleReleaseJson(document.object());
+            }
+        } else {
+            emit errorMessage(sError);
+            result.bNetworkError = true;
+        }
+
+        return result;
+    }
+
+    QNetworkAccessManager nam;
+    nam.setProxy(QNetworkProxy::NoProxy);
     QNetworkRequest req;
     req.setUrl(QUrl(QString(sUrl)));
+    req.setRawHeader("User-Agent", "XGitHub/1.0");
+    req.setRawHeader("Accept", "application/vnd.github+json");
+    req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    req.setTransferTimeout(30000);
 
     // Add credentials if supplied
     if (!m_sAuthUser.isEmpty()) {
@@ -196,13 +366,23 @@ XGitHub::RELEASE_HEADER XGitHub::_getRelease(const QString &sUrl)
         req.setRawHeader("Authorization", auth.toLocal8Bit());
     }
 
-    QNetworkReply *pReply = m_naManager.get(req);
+    QNetworkReply *pReply = nam.get(req);
 
     m_stReplies.insert(pReply);
 
     QEventLoop loop;
+    QTimer timer;
+    timer.setSingleShot(true);
     QObject::connect(pReply, SIGNAL(finished()), &loop, SLOT(quit()));
-    loop.exec();
+    QObject::connect(&timer, &QTimer::timeout, pReply, &QNetworkReply::abort);
+    QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(30000);
+
+    if (!(pReply->isFinished())) {
+        loop.exec();
+    }
+
+    timer.stop();
 
     if (!m_bIsStop) {
         if (!pReply->error()) {
@@ -226,6 +406,10 @@ XGitHub::RELEASE_HEADER XGitHub::_getRelease(const QString &sUrl)
         } else {
             QString sErrorString = pReply->errorString();
 
+            if (pReply->error() == QNetworkReply::OperationCanceledError) {
+                sErrorString = QStringLiteral("Request timeout: %1").arg(sUrl);
+            }
+
             if (sErrorString.contains("server replied: rate limit exceeded\n")) {
                 sErrorString += "Github has the limit is 60 requests per hour for unauthenticated users (and 5000 for authenticated users).\n\n";
                 sErrorString += "TRY AGAIN IN ONE HOUR!";
@@ -242,6 +426,7 @@ XGitHub::RELEASE_HEADER XGitHub::_getRelease(const QString &sUrl)
     }
 
     m_stReplies.remove(pReply);
+    pReply->deleteLater();
 
     return result;
 }
