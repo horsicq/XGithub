@@ -260,8 +260,7 @@ bool XGitHub::downloadFile(const QString &sUrl, const QString &sLocalFilePath)
 
         listArguments << QStringLiteral("--silent") << QStringLiteral("--show-error") << QStringLiteral("--location") << QStringLiteral("--fail")
                       << QStringLiteral("--max-time") << QStringLiteral("30") << QStringLiteral("--user-agent") << QStringLiteral("XGitHub/1.0")
-                      << QStringLiteral("--header") << QStringLiteral("Accept: application/octet-stream") << QStringLiteral("--output") << sLocalFilePath
-                      << sUrl;
+                      << QStringLiteral("--header") << QStringLiteral("Accept: application/octet-stream") << QStringLiteral("--output") << sLocalFilePath << sUrl;
 
         bResult = executeCurl(sCurlProgram, listArguments, nullptr, &sError);
 
