@@ -21,14 +21,13 @@
 #ifndef XGITHUB_H
 #define XGITHUB_H
 
-#include <QEventLoop>
-#include <QFile>
+#include <QDateTime>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QNetworkAccessManager>
-#include <QNetworkProxy>
-#include <QNetworkReply>
+#include <QList>
+#include <QObject>
+#include <QString>
 
 class XGitHub : public QObject {
     Q_OBJECT
@@ -55,9 +54,9 @@ public:
     ~XGitHub();
 
     RELEASE_HEADER getLatestRelease(bool bPrerelease);
-    RELEASE_HEADER getTagRelease(QString sTag);
-    static QList<QString> getDownloadLinks(QString sString);
-    void setCredentials(QString sUser, QString sToken);
+    RELEASE_HEADER getTagRelease(const QString &sTag);
+    static QList<QString> getDownloadLinks(const QString &sString);
+    void setCredentials(const QString &sUser, const QString &sToken);
 
     struct WEBFILE {
         bool bValid;
@@ -71,7 +70,7 @@ public:
     static bool downloadFile(const QString &sUrl, const QString &sLocalFilePath);
 
 private:
-    RELEASE_HEADER _handleReleaseJson(QJsonObject jsonObject);
+    RELEASE_HEADER _handleReleaseJson(const QJsonObject &jsonObject);
     RELEASE_HEADER _getRelease(const QString &sUrl);
 
 signals:
@@ -82,9 +81,6 @@ private:
     QString m_sRepoName;
     QString m_sAuthUser;
     QString m_sAuthToken;
-    bool m_bIsStop;
-    QSet<QNetworkReply *> m_stReplies;
-    QNetworkAccessManager m_naManager;
 };
 
 #endif  // XGITHUB_H
