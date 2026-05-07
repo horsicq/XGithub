@@ -137,10 +137,10 @@ bool requestNetwork(const QString &sUrl, const QString &sAcceptHeader, QByteArra
 {
     QNetworkAccessManager nam;
     nam.setProxy(QNetworkProxy::NoProxy);
-    QNetworkRequest req(QUrl(sUrl));
+    QNetworkRequest req{QUrl(sUrl)};
     req.setRawHeader("User-Agent", XGITHUB_USER_AGENT.toLatin1());
     req.setRawHeader("Accept", sAcceptHeader.toLatin1());
-    req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     req.setTransferTimeout(XGITHUB_TIMEOUT_MS);
 
     QByteArray baAuth = buildBasicAuthHeader(sAuthUser, sAuthToken);
